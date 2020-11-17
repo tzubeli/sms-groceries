@@ -1,1 +1,1 @@
-web: python3 -m flask run $PORT
+web: gunicorn --chdir app main:app
