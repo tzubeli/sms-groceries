@@ -69,7 +69,7 @@ def delete_list(number):
 
 def send_list(number):
     record = record_for(number)
-    if (record): 
+    if (record['fields']['List']): 
         item_list = record['fields']['List']
         print("list exists")
         send_message(number, item_list.replace(", ", "\n"))
