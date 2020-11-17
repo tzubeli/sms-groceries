@@ -50,26 +50,25 @@ def inbound_sms():
 def add(item, number):
 
     record = record_for(number)
-    if (record): 
+    if (record and "List" in record['fields']): 
         item_list = record['fields']['List']
-        fields = {"Phone Number": number, "List": item_list+","+item}
+        fields = {"Phone Number": number, "List": item_list+", "+item}
         AIRTABLE.replace(record['id'], fields)
         
     else:   
-        AIRTABLE.insert({"Phone Number": number, "List": ", ".join(grocery_lists[number])})
+        AIRTABLE.insert({"Phone Number": number, "List": item})
 
 def delete_list(number):
 
     record = record_for(number)
     if (record): 
-        fields = {"Phone Number": number, "List": ""}
-        AIRTABLE.replace(record['id'], fields)
+        AIRTABLE.delete(record['id'])
     else:
         send_message(number, "No list exists for your number. Add items to create a new list!")
 
 def send_list(number):
     record = record_for(number)
-    if (record): 
+    if (record and "List" in record['fields']): 
         item_list = record['fields']['List']
         send_message(number, item_list.replace(", ", "\n"))
         send_message(number, "To delete this list and start fresh, send DELETE")
@@ -95,9 +94,6 @@ def record_for(number):
     record = AIRTABLE.match('Phone Number', number)
     if not len(record):
         return False
-    if not (record['fields']['List']):
-        fields = {"Phone Number": number, "List": ""}
-        AIRTABLE.replace(record['id'], fields)     
     return record     
 
 if __name__ == "__main__":
