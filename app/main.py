@@ -23,6 +23,10 @@ AIRTABLE = Airtable(AIRTABLE_BASE_ID, 'Table 1', AIRTABLE_API_KEY)
 client = vonage.Client(key=VONAGE_API_KEY, secret=VONAGE_API_SECRET)
 sms = vonage.Sms(client)
 
+@app.route("/")
+def hello():
+    return "Hello world!"
+
 @app.route('/webhooks/inbound-sms', methods=['GET', 'POST'])
 def inbound_sms():
     if request.is_json:
@@ -96,5 +100,5 @@ def record_for(number):
 
 if __name__ == "__main__":
 
-    app.run(port=3000)
+    app.run()
 
