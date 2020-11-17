@@ -69,9 +69,8 @@ def delete_list(number):
 
 def send_list(number):
     record = record_for(number)
-    if (record['fields']['List']): 
+    if (record): 
         item_list = record['fields']['List']
-        print("list exists")
         send_message(number, item_list.replace(", ", "\n"))
         send_message(number, "To delete this list and start fresh, send DELETE")
     else:
@@ -96,6 +95,9 @@ def record_for(number):
     record = AIRTABLE.match('Phone Number', number)
     if not len(record):
         return False
+    if not (record['fields']['List']):
+        fields = {"Phone Number": number, "List": ""}
+        AIRTABLE.replace(record['id'], fields)     
     return record     
 
 if __name__ == "__main__":
