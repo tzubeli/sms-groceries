@@ -56,13 +56,13 @@ def add(item, number):
         AIRTABLE.replace(record['id'], fields)
         
     else:   
-        AIRTABLE.insert({"Phone Number": number, "List": ",".join(grocery_lists[number])})
+        AIRTABLE.insert({"Phone Number": number, "List": ", ".join(grocery_lists[number])})
 
 def delete_list(number):
 
     record = record_for(number)
     if (record): 
-        fields = {"Phone Number": number, "List": {}}
+        fields = {"Phone Number": number, "List": ""}
         AIRTABLE.replace(record['id'], fields)
     else:
         send_message(number, "No list exists for your number. Add items to create a new list!")
@@ -72,7 +72,7 @@ def send_list(number):
     if (record): 
         item_list = record['fields']['List']
         print("list exists")
-        send_message(number, item_list)
+        send_message(number, item_list.replace(", ", "\n"))
         send_message(number, "To delete this list and start fresh, send DELETE")
     else:
         send_message(number, "No list exists for your number. Add items to create a new list!")
