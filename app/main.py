@@ -23,18 +23,12 @@ AIRTABLE = Airtable(AIRTABLE_BASE_ID, 'Table 1', AIRTABLE_API_KEY)
 client = vonage.Client(key=VONAGE_API_KEY, secret=VONAGE_API_SECRET)
 sms = vonage.Sms(client)
 
-@app.route("/")
-def hello():
-    return "Hello world!"
-
 @app.route('/webhooks/inbound-sms', methods=['GET', 'POST'])
 def inbound_sms():
-    if request.is_json:
-        pprint(request.get_json())
-    else:
-        data = dict(request.form) or dict(request.args)
-        body = data["text"]
-        number = data["msisdn"]
+
+    data = dict(request.form) or dict(request.args)
+    body = data["text"]
+    number = data["msisdn"]
 
     if body.lower() == "list":
         send_list(number)
@@ -43,7 +37,6 @@ def inbound_sms():
     else:
         add(body, number)
 
- 
     return ('', 204)
 
 
