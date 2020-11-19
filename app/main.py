@@ -25,7 +25,6 @@ sms = vonage.Sms(client)
 
 @app.route('/webhooks/inbound-sms', methods=['GET', 'POST'])
 def inbound_sms():
-
     data = dict(request.form) or dict(request.args)
     body = data["text"]
     number = data["msisdn"]
@@ -36,34 +35,34 @@ def inbound_sms():
         delete_list(number)    
     else:
         add(body, number)
-
     return ('', 204)
 
 
 def add(item, number):
+    record = get_record_for(number)
+    if not record: 
+        fields = get_fields_for(number, item)
+        AIRTABLE.insert(fields) 
+        return
 
-    record = record_for(number)
-    if (record and "List" in record['fields']): 
-        item_list = record['fields']['List']
-        fields = {"Phone Number": number, "List": item_list+", "+item}
-        AIRTABLE.replace(record['id'], fields)
+    item_list = record['fields']['list']
+    fields = get_fields_for(number, item_list+", "+item)
+    AIRTABLE.replace(record['id'], fields)
         
-    else:   
-        AIRTABLE.insert({"Phone Number": number, "List": item})
 
 def delete_list(number):
-
-    record = record_for(number)
-    if (record): 
-        AIRTABLE.delete(record['id'])
-        send_message(number, "List deleted.")
-    else:
+    record = get_record_for(number)
+    if not record: 
         send_message(number, "No list exists for your number. Add items to create a new list!")
+        return
+ 
+    AIRTABLE.delete(record['id'])
+    send_message(number, "List deleted.")
 
 def send_list(number):
-    record = record_for(number)
-    if (record and "List" in record['fields']): 
-        item_list = record['fields']['List']
+    record = get_record_for(number)
+    if record and "list" in record['fields']: 
+        item_list = record['fields']['list']
         send_message(number, item_list.replace(", ", "\n"))
         send_message(number, "To delete this list and start fresh, send DELETE")
     else:
@@ -77,17 +76,16 @@ def send_message(number, text):
         "text": text,
         }
     )
-    if responseData["messages"][0]["status"] == "0":
-        return True
-    else:
-        print(f"Message failed with error: {responseData['messages'][0]['error-text']}")
-        return False 
+    return responseData["messages"][0]["status"] == "0"
 
-def record_for(number): 
+def get_fields_for(number, items):
+    return {"phoneNumber": number, "list": items}
 
-    record = AIRTABLE.match('Phone Number', number)
+
+def get_record_for(number): 
+    record = AIRTABLE.match("phoneNumber", number)
     if not len(record):
-        return False
+        return None
     return record     
 
 if __name__ == "__main__":
