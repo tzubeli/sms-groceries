@@ -63,6 +63,7 @@ def delete_list(number):
     record = record_for(number)
     if (record): 
         AIRTABLE.delete(record['id'])
+        send_message(number, "List deleted.")
     else:
         send_message(number, "No list exists for your number. Add items to create a new list!")
 
